@@ -174,7 +174,7 @@ if __name__ == '__main__':
             model.train()
             btime= time() 
             batch_data = data_generator.generate_train_batch()
-            loss, cf_drop, kg_drop = model("cf", g, sub_cf_g, sub_kg, batch_data['users'], batch_data['pos_items'] +  data_generator.n_users, batch_data['neg_items'] + data_generator.n_users)
+            loss = model("cf", g, sub_cf_g, sub_kg, batch_data['users'], batch_data['pos_items'] +  data_generator.n_users, batch_data['neg_items'] + data_generator.n_users)
             
             optimizer.zero_grad()
             loss.backward()
@@ -203,15 +203,13 @@ if __name__ == '__main__':
         show_step = 5
         if (epoch + 1) % show_step != 0:
             if args.verbose > 0 and epoch % args.verbose == 0:
-                perf_str = 'Epoch %d [%.1fs]: train==[%.5f + %.5f + %.5f] drop==[%.2f + %.2f]' % (
-                    epoch, time() - t1, float(loss), float(kge_loss), float(cl_loss), float(cf_drop), float(kg_drop))
+                perf_str = 'Epoch %d [%.1fs]: train==[%.5f + %.5f + %.5f]' % (
+                    epoch, time() - t1, float(loss), float(kge_loss), float(cl_loss))
                 print(perf_str)
                 swanlab.log({
                     "train_loss": float(loss),
                     "train_kge_loss": float(kge_loss),
                     "train_cl_loss": float(cl_loss),
-                    "cf_drop": float(cf_drop),
-                    "kg_drop": float(kg_drop)
                 })
             continue
         

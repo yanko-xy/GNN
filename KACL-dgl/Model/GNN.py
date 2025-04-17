@@ -181,7 +181,7 @@ class myGAT(nn.Module):
     
     def calc_cl_emb(self, g, drop_learn = False):
         all_embed = []
-        h = self.cl_embed
+        h = self.cl_embed # [N, in_feats]
         tmp = (h / (torch.max(torch.norm(h, dim=1, keepdim=True),self.epsilon)))
         edge_weight = None
         reg = 0
@@ -238,7 +238,7 @@ class myGAT(nn.Module):
     def calc_cf_loss(self, g, sub_g, kg, user_id, pos_item, neg_item):#(self, g, user_id, item_id, pos_mat):
         embedding_cf = self.calc_ui_emb(g) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
         #embedding_cf = self.calc_cl_emb(g)
-        reg_cl, reg_kg = 0, 0
+
         """
         reg_cl, reg_kg = 0, 0
         #embedding_cl, reg_cl = self.calc_cl_emb(sub_g, True)
@@ -265,12 +265,14 @@ class myGAT(nn.Module):
         # L2 正则化损失
         reg_loss = self.weight_decay * ((u_emb*u_emb).sum()/2 + (p_emb*p_emb).sum()/2 + (n_emb*n_emb).sum()/2) / self.batch_size
         loss = base_loss + reg_loss
-        return loss, reg_cl, reg_kg
+        return loss
 
     def calc_cl_loss(self, g, kg, item):
         embedding, _ = self.calc_cl_emb(g, drop_learn=True) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
+        # embedding = self.calc_cl_emb(g)
         #kg_embedding = self.calc_kg_emb(kg, e_feat)
         kg_embedding, _ = self.calc_kg_emb(kg, drop_learn=True) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
+        # kg_embedding = self.calc_kg_emb(kg)
         kg_emb = kg_embedding[item] # [batch_size, n_feats + num_layers * num_heads * num_hidden + num_classes]
         item = item + np.array([self.user_size]) # [batch_size]
         cf_emb = embedding[item] # [batch_size, n_feats + num_layers * num_heads * num_hidden + num_classes]
@@ -282,6 +284,7 @@ class myGAT(nn.Module):
         #embedding = self.calc_kg_emb(g, e_feat)
         weight = False
         embedding, _ = self.calc_kg_emb(g, drop_learn=True) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
+        # embedding = self.calc_kg_emb(g)
         
         h_emb = embedding[h] # [batch_size, n_feats + num_layers * num_heads * num_hidden + num_classes]
         pos_t_emb = embedding[pos_t] # [batch_size, n_feats + num_layers * num_heads * num_hidden + num_classes] 
@@ -297,8 +300,8 @@ class myGAT(nn.Module):
             #print(aug_edge_weight.size(), neg_score.size())
         #loss
         base_loss = (aug_edge_weight * F.softplus(-neg_score + pos_score)).mean() # [1]
-        reg_loss = self.weight_decay * ((h_emb*h_emb).sum()/2 + (pos_t_emb*pos_t_emb).sum()/2 + (neg_t_emb*neg_t_emb).sum()/2) / self.batch_size
-        return base_loss + reg_loss
+        # reg_loss = self.weight_decay * ((h_emb*h_emb).sum()/2 + (pos_t_emb*pos_t_emb).sum()/2 + (neg_t_emb*neg_t_emb).sum()/2) / self.batch_size
+        return base_loss
 
     def forward(self, mode, *input):
         if mode == "cf":
