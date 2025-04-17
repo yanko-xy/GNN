@@ -268,11 +268,11 @@ class myGAT(nn.Module):
         return loss
 
     def calc_cl_loss(self, g, kg, item):
-        embedding, _ = self.calc_cl_emb(g, drop_learn=True) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
-        # embedding = self.calc_cl_emb(g)
+        # embedding, _ = self.calc_cl_emb(g, drop_learn=True) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
+        embedding = self.calc_cl_emb(g)
         #kg_embedding = self.calc_kg_emb(kg, e_feat)
-        kg_embedding, _ = self.calc_kg_emb(kg, drop_learn=True) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
-        # kg_embedding = self.calc_kg_emb(kg)
+        # kg_embedding, _ = self.calc_kg_emb(kg, drop_learn=True) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
+        kg_embedding = self.calc_kg_emb(kg)
         kg_emb = kg_embedding[item] # [batch_size, n_feats + num_layers * num_heads * num_hidden + num_classes]
         item = item + np.array([self.user_size]) # [batch_size]
         cf_emb = embedding[item] # [batch_size, n_feats + num_layers * num_heads * num_hidden + num_classes]
@@ -283,8 +283,8 @@ class myGAT(nn.Module):
     def calc_kg_loss(self, g, h, r, pos_t, neg_t):
         #embedding = self.calc_kg_emb(g, e_feat)
         weight = False
-        embedding, _ = self.calc_kg_emb(g, drop_learn=True) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
-        # embedding = self.calc_kg_emb(g)
+        # embedding, _ = self.calc_kg_emb(g, drop_learn=True) # [N, in_feats + num_layers * num_heads * num_hidden + num_classes]
+        embedding = self.calc_kg_emb(g)
         
         h_emb = embedding[h] # [batch_size, n_feats + num_layers * num_heads * num_hidden + num_classes]
         pos_t_emb = embedding[pos_t] # [batch_size, n_feats + num_layers * num_heads * num_hidden + num_classes] 
