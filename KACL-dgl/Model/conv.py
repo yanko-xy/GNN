@@ -89,28 +89,28 @@ class DropLearner(nn.Module):
             weight += graph.edata.pop('ine')
             #print(weight.size())
         else:
-            w_src = self.mlp_src(node_emb)
-            w_dst = self.mlp_dst(node_emb)
-            graph.srcdata.update({'inl': w_src})
-            graph.dstdata.update({'inr': w_dst})
-            graph.apply_edges(fn.u_add_v('inl', 'inr', 'ine'))
-            n_weight = graph.edata.pop('ine')
+            w_src = self.mlp_src(node_emb) # [N, 1]
+            w_dst = self.mlp_dst(node_emb) # [N, 1]
+            graph.srcdata.update({'inl': w_src})  # [N, 1]
+            graph.dstdata.update({'inr': w_dst}) # [N, 1]
+            graph.apply_edges(fn.u_add_v('inl', 'inr', 'ine')) # [E, 1]
+            n_weight = graph.edata.pop('ine') # [E, 1]
             weight = n_weight
         if relation_emb is not None and self.mlp_edge is not None:
             w_edge = self.mlp_edge(relation_emb)
             graph.edata.update({'ee': w_edge})
             e_weight = graph.edata.pop('ee')
             weight += e_weight
-        weight = weight.squeeze()
+        weight = weight.squeeze() # [E]
         bias = 0.0 + 0.0001  # If bias is 0, we run into problems
         eps = (bias - (1 - bias)) * th.rand(weight.size()) + (1 - bias)
         gate_inputs = th.log(eps) - th.log(1 - eps)
         gate_inputs = gate_inputs.to(node_emb.device)
         gate_inputs = (gate_inputs + weight) / temperature
-        aug_edge_weight = th.sigmoid(gate_inputs).squeeze()
+        aug_edge_weight = th.sigmoid(gate_inputs).squeeze() # [E]
         edge_drop_out_prob = 1 - aug_edge_weight
-        reg = edge_drop_out_prob.mean()
-        aug_edge_weight = aug_edge_weight.unsqueeze(-1).unsqueeze(-1)
+        reg = edge_drop_out_prob.mean() # [1]
+        aug_edge_weight = aug_edge_weight.unsqueeze(-1).unsqueeze(-1) # [E, 1, 1]
         #print(aug_edge_weight.size())
         return reg, aug_edge_weight
         
