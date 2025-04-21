@@ -9,6 +9,6 @@
 source /public/home/zhaochenyang/anaconda3/etc/profile.d/conda.sh
 conda activate GNN
 
-cd /public/home/zhaochenyang/job/GNN/KACL-dgl/Model
+cd /public/home/zhaochenyang/job/GNN/XX/Model
 
 python main.py
